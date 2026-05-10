@@ -2,7 +2,7 @@ import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { setAuthTokenGetter, setBaseUrl } from "@workspace/api-client-react";
 import { getToken } from "@/lib/api";
 import LoginPage from "@/pages/login";
 import DashboardPage from "@/pages/dashboard";
@@ -23,6 +23,9 @@ import NotFound from "@/pages/not-found";
 
 // Wire up auth token for all API calls
 setAuthTokenGetter(() => getToken());
+
+// Use a local API URL in development when provided.
+setBaseUrl(import.meta.env.VITE_API_URL ?? null);
 
 const queryClient = new QueryClient({
   defaultOptions: {
