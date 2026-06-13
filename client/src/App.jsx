@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Page Imports
 import Login from './pages/Login/Login.jsx';
@@ -19,8 +20,53 @@ import Reports from './pages/Reports/Reports.jsx';
 
 const queryClient = new QueryClient();
 
-// A simple main layout wrapping our pages
+// Protected Route Guard
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <span className="text-white text-sm">Loading session...</span>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+}
+
+// Admin Only Route Guard
+function AdminRoute({ children }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <span className="text-white text-sm">Loading session...</span>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (user.role !== 'ADMIN') {
+    return <Navigate to="/pos" replace />;
+  }
+  
+  return children;
+}
+
+// Main Layout with Role-based Sidebar
 function MainLayout({ children }) {
+  const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
       {/* Sidebar navigation */}
@@ -31,23 +77,39 @@ function MainLayout({ children }) {
             <span className="px-2 py-1 bg-amber-500/20 text-amber-400 text-xs font-semibold rounded">POS-v1</span>
           </div>
           <nav className="p-4 space-y-1">
-            <Link to="/dashboard" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Dashboard</Link>
+            {isAdmin && (
+              <Link to="/dashboard" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Dashboard</Link>
+            )}
             <Link to="/pos" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition font-semibold text-amber-400">POS Terminal</Link>
             <Link to="/kitchen" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Kitchen (KDS)</Link>
-            <div className="pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase px-4">Menu & Setup</div>
-            <Link to="/categories" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Categories</Link>
-            <Link to="/products" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Products</Link>
-            <Link to="/floors" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Floors</Link>
-            <Link to="/tables" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Tables</Link>
+            
+            {isAdmin && (
+              <>
+                <div className="pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase px-4">Menu & Setup</div>
+                <Link to="/categories" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Categories</Link>
+                <Link to="/products" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Products</Link>
+                <Link to="/floors" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Floors</Link>
+                <Link to="/tables" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Tables</Link>
+              </>
+            )}
+
             <div className="pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase px-4">Transactions</div>
             <Link to="/orders" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Orders</Link>
             <Link to="/payments" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Payments</Link>
             <Link to="/customers" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Customers</Link>
-            <Link to="/reports" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Reports</Link>
+            
+            {isAdmin && (
+              <Link to="/reports" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Reports</Link>
+            )}
           </nav>
         </div>
         <div className="p-4 border-t border-slate-800">
-          <Link to="/login" className="block text-center w-full px-4 py-2 bg-slate-800 text-slate-300 hover:bg-rose-950 hover:text-rose-200 rounded-lg transition text-sm">Logout</Link>
+          <button 
+            onClick={logout}
+            className="block text-center w-full px-4 py-2 bg-slate-850 hover:bg-rose-950 text-slate-300 hover:text-rose-200 rounded-lg transition text-sm font-semibold"
+          >
+            Logout
+          </button>
         </div>
       </aside>
 
@@ -57,7 +119,7 @@ function MainLayout({ children }) {
           <h1 className="text-lg font-semibold text-gray-800">Cafe Terminal Panel</h1>
           <div className="flex items-center space-x-4">
             <span className="w-3.5 h-3.5 bg-emerald-500 rounded-full animate-pulse"></span>
-            <span className="text-sm text-gray-500 font-medium">Session #42 (Active)</span>
+            <span className="text-sm text-gray-600 font-semibold">{user?.email || 'Offline'} ({user?.role || 'Guest'})</span>
           </div>
         </header>
         <div className="flex-1 overflow-auto p-8">
@@ -71,24 +133,28 @@ function MainLayout({ children }) {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
-          <Route path="/categories" element={<MainLayout><Categories /></MainLayout>} />
-          <Route path="/products" element={<MainLayout><Products /></MainLayout>} />
-          <Route path="/floors" element={<MainLayout><Floors /></MainLayout>} />
-          <Route path="/tables" element={<MainLayout><Tables /></MainLayout>} />
-          <Route path="/customers" element={<MainLayout><Customers /></MainLayout>} />
-          <Route path="/orders" element={<MainLayout><Orders /></MainLayout>} />
-          <Route path="/pos" element={<MainLayout><POS /></MainLayout>} />
-          <Route path="/kitchen" element={<MainLayout><Kitchen /></MainLayout>} />
-          <Route path="/payments" element={<MainLayout><Payments /></MainLayout>} />
-          <Route path="/reports" element={<MainLayout><Reports /></MainLayout>} />
-        </Routes>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            
+            <Route path="/dashboard" element={<AdminRoute><MainLayout><Dashboard /></MainLayout></AdminRoute>} />
+            <Route path="/categories" element={<AdminRoute><MainLayout><Categories /></MainLayout></AdminRoute>} />
+            <Route path="/products" element={<AdminRoute><MainLayout><Products /></MainLayout></AdminRoute>} />
+            <Route path="/floors" element={<AdminRoute><MainLayout><Floors /></MainLayout></AdminRoute>} />
+            <Route path="/tables" element={<AdminRoute><MainLayout><Tables /></MainLayout></AdminRoute>} />
+            <Route path="/reports" element={<AdminRoute><MainLayout><Reports /></MainLayout></AdminRoute>} />
+
+            <Route path="/customers" element={<ProtectedRoute><MainLayout><Customers /></MainLayout></ProtectedRoute>} />
+            <Route path="/orders" element={<ProtectedRoute><MainLayout><Orders /></MainLayout></ProtectedRoute>} />
+            <Route path="/pos" element={<ProtectedRoute><MainLayout><POS /></MainLayout></ProtectedRoute>} />
+            <Route path="/kitchen" element={<ProtectedRoute><MainLayout><Kitchen /></MainLayout></ProtectedRoute>} />
+            <Route path="/payments" element={<ProtectedRoute><MainLayout><Payments /></MainLayout></ProtectedRoute>} />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

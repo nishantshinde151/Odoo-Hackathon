@@ -1,6 +1,6 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 generator client {
@@ -22,8 +22,8 @@ model Session {
   user           User      @relation(fields: [userId], references: [id])
   openingTime    DateTime  @default(now())
   closingTime    DateTime?
-  openingBalance Decimal   @db.Decimal(10, 2)
-  closingAmount  Decimal?  @db.Decimal(10, 2)
+  openingBalance Decimal
+  closingAmount  Decimal?
   status         String    @default("OPEN") // "OPEN" | "CLOSED"
   orders         Order[]
 }
@@ -48,8 +48,8 @@ model Product {
   name           String
   categoryId     Int
   category       Category    @relation(fields: [categoryId], references: [id])
-  price          Decimal     @db.Decimal(10, 2)
-  taxPercentage  Decimal     @db.Decimal(5, 2) @default(5.00)
+  price          Decimal
+  taxPercentage  Decimal     @default(5.00)
   uom            String      @default("Unit")
   description    String?
   active         Boolean     @default(true)
@@ -82,10 +82,10 @@ model Order {
   customer     Customer?     @relation(fields: [customerId], references: [id])
   orderNumber  String        @unique
   status       String        @default("DRAFT") // "DRAFT" | "KITCHEN" | "PREPARING" | "COMPLETED" | "PAID" | "CANCELLED"
-  subtotal     Decimal       @db.Decimal(10, 2)
-  tax          Decimal       @db.Decimal(10, 2)
-  discount     Decimal       @db.Decimal(10, 2) @default(0.00)
-  grandTotal   Decimal       @db.Decimal(10, 2)
+  subtotal     Decimal
+  tax          Decimal
+  discount     Decimal       @default(0.00)
+  grandTotal   Decimal
   createdAt    DateTime      @default(now())
   orderItems   OrderItem[]
   payments     Payment[]
@@ -99,10 +99,10 @@ model OrderItem {
   productId      Int
   product        Product @relation(fields: [productId], references: [id])
   quantity       Int
-  unitPrice      Decimal @db.Decimal(10, 2)
-  taxAmount      Decimal @db.Decimal(10, 2)
-  discountAmount Decimal @db.Decimal(10, 2) @default(0.00)
-  total          Decimal @db.Decimal(10, 2)
+  unitPrice      Decimal
+  taxAmount      Decimal
+  discountAmount Decimal @default(0.00)
+  total          Decimal
 }
 
 model Payment {
@@ -110,7 +110,7 @@ model Payment {
   orderId              Int
   order                Order    @relation(fields: [orderId], references: [id])
   method               String   // "CASH" | "CARD" | "UPI"
-  amount               Decimal  @db.Decimal(10, 2)
+  amount               Decimal
   transactionReference String?
   paymentDate          DateTime @default(now())
 }
@@ -119,7 +119,7 @@ model Coupon {
   id             Int           @id @default(autoincrement())
   code           String        @unique
   discountType   String        // "PERCENTAGE" | "FIXED"
-  discountValue  Decimal       @db.Decimal(10, 2)
+  discountValue  Decimal
   expirationDate DateTime
   active         Boolean       @default(true)
   orderCoupons   OrderCoupon[]
@@ -138,7 +138,7 @@ model Promotion {
   name          String
   type          String   // "PRODUCT" | "ORDER"
   triggerQty    Int?
-  triggerValue  Decimal? @db.Decimal(10, 2)
-  discountValue Decimal  @db.Decimal(10, 2)
+  triggerValue  Decimal?
+  discountValue Decimal
   active        Boolean  @default(true)
 }

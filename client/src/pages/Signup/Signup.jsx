@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Coffee, Activity, Shield, Mail, Lock, Eye, EyeOff, User, ArrowRight } from 'lucide-react';
+import { signup } from '../../services/authService';
 
 export default function Signup() {
   const [fullName, setFullName] = useState('');
@@ -8,12 +9,26 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Staff');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    // Redirect to login or dashboard on submit for mock purposes
-    navigate('/login');
+    setError('');
+    setLoading(true);
+
+    // Map frontend roles to backend role constraints (ADMIN / EMPLOYEE)
+    const backendRole = role === 'Admin' ? 'ADMIN' : 'EMPLOYEE';
+
+    try {
+      await signup(email, password, backendRole);
+      navigate('/login', { state: { message: 'Account created successfully! Please sign in.' } });
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Failed to create account');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,6 +52,12 @@ export default function Signup() {
             <h3 className="text-xl font-semibold text-white">Create an account</h3>
             <p className="text-[#8c7b72] text-sm">Join the team and select your role to get started.</p>
         </div>
+
+        {error && (
+          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3.5 rounded-xl text-xs font-semibold">
+            {error}
+          </div>
+        )}
 
         <div className="space-y-3">
              <label className="block text-[10px] font-semibold text-[#6b5a51] uppercase tracking-wider">Staff Role</label>
@@ -117,9 +138,10 @@ export default function Signup() {
           
           <button
             type="submit"
-            className="w-full py-3.5 mt-2 bg-[#e87c0a] hover:bg-[#d56b06] text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm"
+            disabled={loading}
+            className="w-full py-3.5 mt-2 bg-[#e87c0a] hover:bg-[#d56b06] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm"
           >
-            Create Account <ArrowRight className="w-4 h-4" />
+            {loading ? 'Creating Account...' : <>Create Account <ArrowRight className="w-4 h-4" /></>}
           </button>
 
           <p className="text-center text-xs text-[#6b5a51] mt-4">

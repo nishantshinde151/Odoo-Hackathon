@@ -1,18 +1,37 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Coffee, Activity, Shield, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Staff');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
-  const handleLogin = (e) => {
+  const successMessage = location.state?.message;
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Redirect to dashboard on submit for mock purposes
-    navigate('/dashboard');
+    setError('');
+    setLoading(true);
+    try {
+      const data = await login(email, password);
+      if (data.user.role === 'ADMIN') {
+        navigate('/dashboard');
+      } else {
+        navigate('/pos');
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Failed to sign in');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,6 +55,18 @@ export default function Login() {
             <h3 className="text-xl font-semibold text-white">Sign in to your shift</h3>
             <p className="text-[#8c7b72] text-sm">Select your role and enter your credentials to access the POS terminal.</p>
         </div>
+
+        {successMessage && !error && (
+          <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3.5 rounded-xl text-xs font-semibold">
+            {successMessage}
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3.5 rounded-xl text-xs font-semibold">
+            {error}
+          </div>
+        )}
 
         <div className="space-y-3">
              <label className="block text-[10px] font-semibold text-[#6b5a51] uppercase tracking-wider">Staff Role</label>
@@ -110,9 +141,10 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-[#e87c0a] hover:bg-[#d56b06] text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm"
+            disabled={loading}
+            className="w-full py-3.5 bg-[#e87c0a] hover:bg-[#d56b06] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm"
           >
-            Sign In to Cafe <ArrowRight className="w-4 h-4" />
+            {loading ? 'Signing In...' : <>Sign In to Cafe <ArrowRight className="w-4 h-4" /></>}
           </button>
 
           <p className="text-center text-xs text-[#6b5a51] mt-6">
