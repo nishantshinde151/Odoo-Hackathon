@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Page Imports
 import Login from './pages/Login/Login.jsx';
+import Signup from './pages/Signup/Signup.jsx';
 import Dashboard from './pages/Dashboard/Dashboard.jsx';
 import Categories from './pages/Categories/Categories.jsx';
 import Products from './pages/Products/Products.jsx';
@@ -74,6 +75,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
           <Route path="/categories" element={<MainLayout><Categories /></MainLayout>} />
           <Route path="/products" element={<MainLayout><Products /></MainLayout>} />
