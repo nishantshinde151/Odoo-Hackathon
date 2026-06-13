@@ -60,6 +60,7 @@ model Product {
 model Floor {
   id     Int     @id @default(autoincrement())
   name   String
+  active Boolean @default(true)
   tables Table[]
 }
 

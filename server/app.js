@@ -13,6 +13,8 @@ import customerRoutes from './src/routes/customerRoutes.js';
 import orderRoutes from './src/routes/orderRoutes.js';
 import paymentRoutes from './src/routes/paymentRoutes.js';
 import reportRoutes from './src/routes/reportRoutes.js';
+import floorRoutes from './src/routes/floorRoutes.js';
+import tableRoutes from './src/routes/tableRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,6 +38,8 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/floors', floorRoutes);
+app.use('/api/tables', tableRoutes);
 
 // Error Handler Middleware
 app.use(errorMiddleware);

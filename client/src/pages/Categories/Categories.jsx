@@ -10,6 +10,9 @@ import {
   deleteCategory 
 } from '../../services/categoryService';
 
+
+const tea = {name: 'red' , value:"'#1c1c1c"};
+
 // Predefined palette colors for the cafe theme
 const CAFE_COLORS = [
   { name: 'Coffee Brown', value: '#6F4E37' },
