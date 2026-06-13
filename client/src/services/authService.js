@@ -21,6 +21,7 @@ export const logout = () => {
 
 export const getCurrentUser = () => {
   const token = localStorage.getItem('jwtToken');
+  console.log(token);
   if (!token) return null;
   // Simple jwt parser mock
   try {

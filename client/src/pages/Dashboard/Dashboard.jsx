@@ -41,16 +41,16 @@ export default function Dashboard() {
     }).format(value);
   };
 
-  // Mock values from screenshot
+  // Mock values 
   const mockStats = {
     totalOrders: 1248,
     todayRevenue: 4250.00,
-    avgOrderValue: 18.50, // screenshot value
+    avgOrderValue: 18.50, // value
     activeTables: "12/24",
     activeTablesPercent: 50
   };
 
-  // Merge live database data if it exists, otherwise fall back to screenshot mocks
+  // Merge live database data if it exists, otherwise fall back to  mocks
   const stats = {
     totalOrders: liveData?.totalOrders ? liveData.totalOrders + mockStats.totalOrders : mockStats.totalOrders,
     todayRevenue: liveData?.totalRevenue ? Number(liveData.totalRevenue) + mockStats.todayRevenue : mockStats.todayRevenue,
