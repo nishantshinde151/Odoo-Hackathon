@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { LayoutDashboard, Coffee, Layers, BarChart3, Users, Settings, LogOut, Bell, Search, Database } from 'lucide-react';
+import { LayoutDashboard, Coffee, Layers, BarChart3, Users, Settings, LogOut, Bell, Search, Database, FolderKanban } from 'lucide-react';
 
 // Page Imports
 import Login from './pages/Login/Login.jsx';
@@ -101,6 +101,7 @@ function MainLayout({ children }) {
 
   const adminLinks = [
     { name: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+    { name: 'Categories', to: '/categories', icon: FolderKanban },
     { name: 'Products', to: '/products', icon: Coffee },
     { name: 'Floor Plan', to: '/floors', icon: Layers },
     { name: 'Reports', to: '/reports', icon: BarChart3 },
