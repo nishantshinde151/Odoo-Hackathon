@@ -43,7 +43,7 @@ These dependencies form the foundation of the Node.js REST API server, database 
 * **`dotenv`**: Loads environment configuration variables from the local `.env` file (e.g., `DATABASE_URL`, `JWT_SECRET`).
 
 ### Database & ORM
-* **`prisma` & `@prisma/client`**: Object-Relational Mapper (ORM) used to model database tables, handle migrations, and execute clean type-safe PostgreSQL database queries.
+* **`prisma` & `@prisma/client`**: Object-Relational Mapper (ORM) used to model database tables, handle migrations, and execute clean type-safe MySQL database queries.
 
 ### Authentication & Security
 * **`jsonwebtoken`**: Generates and verifies secure JSON Web Tokens (JWT) for user authorization.
