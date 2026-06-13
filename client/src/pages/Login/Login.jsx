@@ -29,7 +29,7 @@ export default function Login() {
         navigate('/pos');
       }
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to sign in');
+      setError(err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }

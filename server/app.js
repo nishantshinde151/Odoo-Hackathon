@@ -6,6 +6,7 @@ import { errorMiddleware } from './src/middlewares/errorMiddleware.js';
 
 // Route Imports
 import authRoutes from './src/routes/authRoutes.js';
+import userRoutes from './src/routes/userRoutes.js';
 import categoryRoutes from './src/routes/categoryRoutes.js';
 import productRoutes from './src/routes/productRoutes.js';
 import customerRoutes from './src/routes/customerRoutes.js';
@@ -28,6 +29,7 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Base routes mapping
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/customers', customerRoutes);

@@ -22,10 +22,10 @@ export default function Signup() {
     const backendRole = role === 'Admin' ? 'ADMIN' : 'EMPLOYEE';
 
     try {
-      await signup(email, password, backendRole);
+      await signup(fullName, email, password, backendRole);
       navigate('/login', { state: { message: 'Account created successfully! Please sign in.' } });
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to create account');
+      setError(err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to create account');
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login/Login.jsx';
 import Signup from './pages/Signup/Signup.jsx';
 import Dashboard from './pages/Dashboard/Dashboard.jsx';
+import Employees from './pages/Employees/Employees.jsx';
 import Categories from './pages/Categories/Categories.jsx';
 import Products from './pages/Products/Products.jsx';
 import Floors from './pages/Floors/Floors.jsx';
@@ -86,6 +87,7 @@ function MainLayout({ children }) {
             {isAdmin && (
               <>
                 <div className="pt-4 pb-2 text-xs font-semibold text-slate-500 uppercase px-4">Menu & Setup</div>
+                <Link to="/employees" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition font-semibold text-amber-500">Employees</Link>
                 <Link to="/categories" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Categories</Link>
                 <Link to="/products" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Products</Link>
                 <Link to="/floors" className="block px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">Floors</Link>
@@ -141,6 +143,7 @@ export default function App() {
             <Route path="/signup" element={<Signup />} />
             
             <Route path="/dashboard" element={<AdminRoute><MainLayout><Dashboard /></MainLayout></AdminRoute>} />
+            <Route path="/employees" element={<AdminRoute><MainLayout><Employees /></MainLayout></AdminRoute>} />
             <Route path="/categories" element={<AdminRoute><MainLayout><Categories /></MainLayout></AdminRoute>} />
             <Route path="/products" element={<AdminRoute><MainLayout><Products /></MainLayout></AdminRoute>} />
             <Route path="/floors" element={<AdminRoute><MainLayout><Floors /></MainLayout></AdminRoute>} />
