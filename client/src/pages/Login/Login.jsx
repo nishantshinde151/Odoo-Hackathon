@@ -21,7 +21,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const backendRole = role === 'Admin' ? 'ADMIN' : 'EMPLOYEE';
+      const backendRole = role === 'Admin' ? 'ADMIN' : role === 'Kitchen' ? 'KITCHEN' : 'EMPLOYEE';
       const data = await login(email, password, backendRole);
       if (data.user.role === 'ADMIN') {
         navigate('/dashboard');

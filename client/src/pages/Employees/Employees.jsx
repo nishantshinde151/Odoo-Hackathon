@@ -223,8 +223,12 @@ export default function Employees() {
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-600">{emp.email}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs ${emp.role === 'ADMIN' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                        {emp.role === 'ADMIN' ? 'Admin' : 'Employee'}
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs ${
+                        emp.role === 'ADMIN' ? 'bg-indigo-50 text-indigo-600' : 
+                        emp.role === 'KITCHEN' ? 'bg-amber-50 text-amber-600' :
+                        'bg-emerald-50 text-emerald-600'
+                      }`}>
+                        {emp.role === 'ADMIN' ? 'Admin' : emp.role === 'KITCHEN' ? 'Kitchen' : 'Employee'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -330,7 +334,8 @@ export default function Employees() {
                     onChange={(e) => setRole(e.target.value)}
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-500"
                   >
-                    <option value="EMPLOYEE">Employee</option>
+                    <option value="EMPLOYEE">Employee (POS)</option>
+                    <option value="KITCHEN">Kitchen (KDS)</option>
                     <option value="ADMIN">Admin</option>
                   </select>
                 </div>
@@ -418,7 +423,8 @@ export default function Employees() {
                     onChange={(e) => setRole(e.target.value)}
                     className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-500"
                   >
-                    <option value="EMPLOYEE">Employee</option>
+                    <option value="EMPLOYEE">Employee (POS)</option>
+                    <option value="KITCHEN">Kitchen (KDS)</option>
                     <option value="ADMIN">Admin</option>
                   </select>
                 </div>

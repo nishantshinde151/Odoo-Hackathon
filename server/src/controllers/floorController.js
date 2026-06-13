@@ -13,7 +13,9 @@ export const getAllFloors = async (req, res, next) => {
                 }
               },
               include: {
-                customer: true
+                customer: true,
+                orderItems: { include: { product: true } },
+                orderCoupons: { include: { coupon: true } }
               }
             }
           }

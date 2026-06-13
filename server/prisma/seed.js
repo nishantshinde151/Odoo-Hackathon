@@ -97,6 +97,14 @@ async function main() {
     ],
   });
 
+  console.log('Seeding promotions...');
+  await prisma.promotion.createMany({
+    data: [
+      { name: 'Over 500 Discount', type: 'ORDER', triggerValue: 500.00, discountValue: 50.00 },
+      { name: 'Buy 3+ Coffee Deal', type: 'PRODUCT', triggerQty: 3, discountValue: 15.00 },
+    ],
+  });
+
   console.log('Database seeding completed!');
 }
 

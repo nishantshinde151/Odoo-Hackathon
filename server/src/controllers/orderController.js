@@ -7,7 +7,8 @@ export const getOrders = async (req, res, next) => {
       include: { 
         orderItems: { include: { product: true } }, 
         table: { include: { floor: true } },
-        customer: true
+        customer: true,
+        orderCoupons: { include: { coupon: true } }
       }
     });
     res.status(200).json(orders);
@@ -18,7 +19,7 @@ export const getOrders = async (req, res, next) => {
 
 export const createOrder = async (req, res, next) => {
   try {
-    const { sessionId, tableId, customerId, orderNumber, subtotal, tax, discount, grandTotal, items } = req.body;
+    const { sessionId, tableId, customerId, orderNumber, subtotal, tax, discount, grandTotal, items, couponId } = req.body;
     
     // Resolve session automatically if not provided
     let resolvedSessionId = sessionId;
@@ -37,14 +38,7 @@ export const createOrder = async (req, res, next) => {
       });
       
       if (!activeSession) {
-        // Find any user first just in case
-        activeSession = await prisma.session.create({
-          data: {
-            userId: parseInt(userId),
-            openingBalance: 1000.00,
-            status: 'OPEN'
-          }
-        });
+        return res.status(400).json({ error: 'No active open session found. Please open a session first.' });
       }
       resolvedSessionId = activeSession.id;
     }
@@ -71,12 +65,16 @@ export const createOrder = async (req, res, next) => {
             discountAmount: parseFloat(item.discountAmount || 0),
             total: parseFloat(item.total)
           }))
-        }
+        },
+        orderCoupons: couponId ? {
+          create: [{ couponId: parseInt(couponId) }]
+        } : undefined
       },
       include: { 
         orderItems: { include: { product: true } }, 
         table: { include: { floor: true } },
-        customer: true
+        customer: true,
+        orderCoupons: { include: { coupon: true } }
       }
     });
 
@@ -97,14 +95,19 @@ export const createOrder = async (req, res, next) => {
 export const updateOrder = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { customerId, subtotal, tax, discount, grandTotal, items, status } = req.body;
+    const { customerId, subtotal, tax, discount, grandTotal, items, status, couponId } = req.body;
 
     // Delete existing line items first
     await prisma.orderItem.deleteMany({
       where: { orderId: parseInt(id) }
     });
 
-    // Update order with new properties and line items
+    // Delete existing coupon mappings first
+    await prisma.orderCoupon.deleteMany({
+      where: { orderId: parseInt(id) }
+    });
+
+    // Update order with new properties, line items, and coupon
     const order = await prisma.order.update({
       where: { id: parseInt(id) },
       data: {
@@ -123,12 +126,16 @@ export const updateOrder = async (req, res, next) => {
             discountAmount: parseFloat(item.discountAmount || 0),
             total: parseFloat(item.total)
           }))
-        }
+        },
+        orderCoupons: couponId ? {
+          create: [{ couponId: parseInt(couponId) }]
+        } : undefined
       },
       include: { 
         orderItems: { include: { product: true } }, 
         table: { include: { floor: true } },
-        customer: true
+        customer: true,
+        orderCoupons: { include: { coupon: true } }
       }
     });
 
@@ -157,7 +164,8 @@ export const updateOrderStatus = async (req, res, next) => {
       include: { 
         orderItems: { include: { product: true } }, 
         table: { include: { floor: true } },
-        customer: true
+        customer: true,
+        orderCoupons: { include: { coupon: true } }
       }
     });
 
@@ -170,6 +178,52 @@ export const updateOrderStatus = async (req, res, next) => {
     }
 
     res.status(200).json(order);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteOrder = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const orderId = parseInt(id);
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found.' });
+    }
+
+    if (order.status !== 'DRAFT' && order.status !== 'CANCELLED') {
+      return res.status(400).json({ error: 'Only draft or cancelled orders can be deleted to maintain audit integrity.' });
+    }
+
+    // Delete associated line items first
+    await prisma.orderItem.deleteMany({
+      where: { orderId }
+    });
+
+    // Delete associated coupon mappings
+    await prisma.orderCoupon.deleteMany({
+      where: { orderId }
+    });
+
+    // Delete the order itself
+    await prisma.order.delete({
+      where: { id: orderId }
+    });
+
+    // Broadcast update so floor layout resets immediately
+    try {
+      const io = getIO();
+      io.emit('pos:order_status_update', { id: orderId, status: 'DELETED', tableId: order.tableId });
+    } catch (wsError) {
+      console.warn('WebSocket notification failed during delete:', wsError.message);
+    }
+
+    res.status(200).json({ message: 'Order deleted successfully.' });
   } catch (error) {
     next(error);
   }

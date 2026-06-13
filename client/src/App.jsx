@@ -19,6 +19,7 @@ import POS from './pages/POS/POS.jsx';
 import Kitchen from './pages/Kitchen/Kitchen.jsx';
 import Payments from './pages/Payments/Payments.jsx';
 import Reports from './pages/Reports/Reports.jsx';
+import Sessions from './pages/Sessions/Sessions.jsx';
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,29 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+// Employee Only Route Guard
+function EmployeeRoute({ children }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <span className="text-white text-sm">Loading session...</span>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (user.role === 'KITCHEN') {
+    return <Navigate to="/kitchen" replace />;
+  }
+  
+  return children;
+}
+
 // Admin Only Route Guard
 function AdminRoute({ children }) {
   const { user, loading } = useAuth();
@@ -58,6 +82,9 @@ function AdminRoute({ children }) {
   }
   
   if (user.role !== 'ADMIN') {
+    if (user.role === 'KITCHEN') {
+      return <Navigate to="/kitchen" replace />;
+    }
     return <Navigate to="/pos" replace />;
   }
   
@@ -84,20 +111,33 @@ function MainLayout({ children }) {
       case '/orders': return 'Orders Ledger';
       case '/payments': return 'Payments List';
       case '/customers': return 'Customer Registry';
+      case '/sessions': return 'Session Ledger';
       default: return 'Smart Cafe';
     }
   };
 
-  const headerTabs = isAdmin ? [
+  const adminTabs = [
     { name: 'Dashboard', to: '/dashboard' },
     { name: 'Orders', to: '/orders' },
     { name: 'Tables', to: '/tables' },
     { name: 'Inventory', to: '/products' }
-  ] : [
+  ];
+
+  const employeeTabs = [
     { name: 'POS Terminal', to: '/pos' },
     { name: 'Orders', to: '/orders' },
     { name: 'Kitchen', to: '/kitchen' }
   ];
+
+  const kitchenTabs = [
+    { name: 'Kitchen', to: '/kitchen' }
+  ];
+
+  const getHeaderTabs = () => {
+    if (isAdmin) return adminTabs;
+    if (user?.role === 'KITCHEN') return kitchenTabs;
+    return employeeTabs;
+  };
 
   const adminLinks = [
     { name: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
@@ -106,6 +146,7 @@ function MainLayout({ children }) {
     { name: 'Floor Plan', to: '/floors', icon: Layers },
     { name: 'Reports', to: '/reports', icon: BarChart3 },
     { name: 'Staff', to: '/employees', icon: Users },
+    { name: 'Sessions', to: '/sessions', icon: Database },
     { name: 'Settings', to: '/tables', icon: Settings }
   ];
 
@@ -114,10 +155,18 @@ function MainLayout({ children }) {
     { name: 'Kitchen (KDS)', to: '/kitchen', icon: Layers },
     { name: 'Orders', to: '/orders', icon: BarChart3 },
     { name: 'Payments', to: '/payments', icon: Coffee },
-    { name: 'Customers', to: '/customers', icon: Users }
+    { name: 'Customers', to: '/customers', icon: Users },
+    { name: 'Sessions', to: '/sessions', icon: Database }
   ];
 
-  const sidebarLinks = isAdmin ? adminLinks : employeeLinks;
+  const kitchenLinks = [
+    { name: 'Kitchen (KDS)', to: '/kitchen', icon: Layers }
+  ];
+
+  let sidebarLinks;
+  if (isAdmin) sidebarLinks = adminLinks;
+  else if (user?.role === 'KITCHEN') sidebarLinks = kitchenLinks;
+  else sidebarLinks = employeeLinks;
 
   return (
     <div className="flex h-screen bg-[#FAF8F6] font-sans overflow-hidden">
@@ -181,7 +230,7 @@ function MainLayout({ children }) {
             
             {/* Header Navigation Tabs */}
             <div className="flex items-center gap-6 ml-10 border-l border-gray-250 pl-10">
-              {headerTabs.map((tab) => {
+              {getHeaderTabs().map((tab) => {
                 const isActive = location.pathname === tab.to;
                 return (
                   <Link 
@@ -261,11 +310,12 @@ export default function App() {
             <Route path="/tables" element={<AdminRoute><MainLayout><Tables /></MainLayout></AdminRoute>} />
             <Route path="/reports" element={<AdminRoute><MainLayout><Reports /></MainLayout></AdminRoute>} />
 
-            <Route path="/customers" element={<ProtectedRoute><MainLayout><Customers /></MainLayout></ProtectedRoute>} />
-            <Route path="/orders" element={<ProtectedRoute><MainLayout><Orders /></MainLayout></ProtectedRoute>} />
-            <Route path="/pos" element={<ProtectedRoute><MainLayout><POS /></MainLayout></ProtectedRoute>} />
+            <Route path="/customers" element={<EmployeeRoute><MainLayout><Customers /></MainLayout></EmployeeRoute>} />
+            <Route path="/orders" element={<EmployeeRoute><MainLayout><Orders /></MainLayout></EmployeeRoute>} />
+            <Route path="/pos" element={<EmployeeRoute><MainLayout><POS /></MainLayout></EmployeeRoute>} />
             <Route path="/kitchen" element={<ProtectedRoute><MainLayout><Kitchen /></MainLayout></ProtectedRoute>} />
-            <Route path="/payments" element={<ProtectedRoute><MainLayout><Payments /></MainLayout></ProtectedRoute>} />
+            <Route path="/payments" element={<EmployeeRoute><MainLayout><Payments /></MainLayout></EmployeeRoute>} />
+            <Route path="/sessions" element={<ProtectedRoute><MainLayout><Sessions /></MainLayout></ProtectedRoute>} />
           </Routes>
         </Router>
       </AuthProvider>

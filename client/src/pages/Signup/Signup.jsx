@@ -19,7 +19,7 @@ export default function Signup() {
     setLoading(true);
 
     // Map frontend roles to backend role constraints (ADMIN / EMPLOYEE)
-    const backendRole = role === 'Admin' ? 'ADMIN' : 'EMPLOYEE';
+    const backendRole = role === 'Admin' ? 'ADMIN' : role === 'Kitchen' ? 'KITCHEN' : 'EMPLOYEE';
 
     try {
       await signup(fullName, email, password, backendRole);

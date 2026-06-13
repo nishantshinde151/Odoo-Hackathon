@@ -15,6 +15,9 @@ import paymentRoutes from './src/routes/paymentRoutes.js';
 import reportRoutes from './src/routes/reportRoutes.js';
 import floorRoutes from './src/routes/floorRoutes.js';
 import tableRoutes from './src/routes/tableRoutes.js';
+import sessionRoutes from './src/routes/sessionRoutes.js';
+import couponRoutes from './src/routes/couponRoutes.js';
+import promotionRoutes from './src/routes/promotionRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,6 +43,9 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/floors', floorRoutes);
 app.use('/api/tables', tableRoutes);
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/promotions', promotionRoutes);
 
 // Error Handler Middleware
 app.use(errorMiddleware);
