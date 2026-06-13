@@ -31,11 +31,12 @@ export const createProduct = async (req, res, next) => {
 export const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, price, taxPercentage, uom, description, active } = req.body;
+    const { name, categoryId, price, taxPercentage, uom, description, active } = req.body;
     const product = await prisma.product.update({
       where: { id: parseInt(id) },
       data: {
         name,
+        categoryId: categoryId ? parseInt(categoryId) : undefined,
         price: price ? parseFloat(price) : undefined,
         taxPercentage: taxPercentage ? parseFloat(taxPercentage) : undefined,
         uom,
