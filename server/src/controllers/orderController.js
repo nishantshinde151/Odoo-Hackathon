@@ -63,7 +63,8 @@ export const createOrder = async (req, res, next) => {
             unitPrice: parseFloat(item.unitPrice),
             taxAmount: parseFloat(item.taxAmount || 0),
             discountAmount: parseFloat(item.discountAmount || 0),
-            total: parseFloat(item.total)
+            total: parseFloat(item.total),
+            spicePreference: item.spicePreference || null
           }))
         },
         orderCoupons: couponId ? {
@@ -129,7 +130,8 @@ export const updateOrder = async (req, res, next) => {
             unitPrice: parseFloat(item.unitPrice),
             taxAmount: parseFloat(item.taxAmount || 0),
             discountAmount: parseFloat(item.discountAmount || 0),
-            total: parseFloat(item.total)
+            total: parseFloat(item.total),
+            spicePreference: item.spicePreference || null
           }))
         },
         orderCoupons: couponId ? {

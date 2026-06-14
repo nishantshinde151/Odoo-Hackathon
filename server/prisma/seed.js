@@ -58,15 +58,15 @@ async function main() {
   console.log('Seeding products...');
   await prisma.product.createMany({
     data: [
-      { name: 'Espresso', price: 120.00, categoryId: coffeeCat.id, taxPercentage: 5.00, uom: 'Cup', description: 'Strong black coffee' },
-      { name: 'Cappuccino', price: 150.00, categoryId: coffeeCat.id, taxPercentage: 5.00, uom: 'Cup', description: 'Espresso with steamed milk foam' },
-      { name: 'Latte', price: 160.00, categoryId: coffeeCat.id, taxPercentage: 5.00, uom: 'Cup', description: 'Espresso with lots of steamed milk' },
-      { name: 'Club Sandwich', price: 180.00, categoryId: snackCat.id, taxPercentage: 5.00, uom: 'Plate', description: 'Toasted sandwich with chicken and bacon' },
-      { name: 'French Fries', price: 100.00, categoryId: snackCat.id, taxPercentage: 5.00, uom: 'Plate', description: 'Crispy golden potato fries' },
-      { name: 'Chocolate Fudge', price: 220.00, categoryId: dessertCat.id, taxPercentage: 5.00, uom: 'Slice', description: 'Decadent chocolate cake slice' },
-      { name: 'Apple Pie', price: 190.00, categoryId: dessertCat.id, taxPercentage: 5.00, uom: 'Slice', description: 'Warm apple pie' },
-      { name: 'Iced Tea', price: 90.00, categoryId: drinkCat.id, taxPercentage: 5.00, uom: 'Glass', description: 'Chilled peach iced tea' },
-      { name: 'Lemonade', price: 80.00, categoryId: drinkCat.id, taxPercentage: 5.00, uom: 'Glass', description: 'Freshly squeezed lemonade' },
+      { name: 'Espresso', price: 120.00, categoryId: coffeeCat.id, taxPercentage: 5.00, uom: 'Cup', description: 'Strong black coffee', image: '/images/espresso.png' },
+      { name: 'Cappuccino', price: 150.00, categoryId: coffeeCat.id, taxPercentage: 5.00, uom: 'Cup', description: 'Espresso with steamed milk foam', image: '/images/cappuccino.png' },
+      { name: 'Latte', price: 160.00, categoryId: coffeeCat.id, taxPercentage: 5.00, uom: 'Cup', description: 'Espresso with lots of steamed milk', image: '/images/latte.png' },
+      { name: 'Club Sandwich', price: 180.00, categoryId: snackCat.id, taxPercentage: 5.00, uom: 'Plate', description: 'Toasted sandwich with chicken and bacon', image: '/images/club_sandwich.png' },
+      { name: 'French Fries', price: 100.00, categoryId: snackCat.id, taxPercentage: 5.00, uom: 'Plate', description: 'Crispy golden potato fries', image: '/images/french_fries.png' },
+      { name: 'Chocolate Fudge', price: 220.00, categoryId: dessertCat.id, taxPercentage: 5.00, uom: 'Slice', description: 'Decadent chocolate cake slice', image: '/images/chocolate_fudge.png' },
+      { name: 'Apple Pie', price: 190.00, categoryId: dessertCat.id, taxPercentage: 5.00, uom: 'Slice', description: 'Warm apple pie', image: '/images/apple_pie.png' },
+      { name: 'Iced Tea', price: 90.00, categoryId: drinkCat.id, taxPercentage: 5.00, uom: 'Glass', description: 'Chilled peach iced tea', image: '/images/iced_tea.png' },
+      { name: 'Lemonade', price: 80.00, categoryId: drinkCat.id, taxPercentage: 5.00, uom: 'Glass', description: 'Freshly squeezed lemonade', image: '/images/lemonade.png' },
     ],
   });
 

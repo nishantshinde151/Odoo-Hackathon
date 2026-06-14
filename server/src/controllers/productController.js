@@ -11,7 +11,7 @@ export const getAllProducts = async (req, res, next) => {
 
 export const createProduct = async (req, res, next) => {
   try {
-    const { name, categoryId, price, taxPercentage, uom, description } = req.body;
+    const { name, categoryId, price, taxPercentage, uom, description, image } = req.body;
     const product = await prisma.product.create({
       data: {
         name,
@@ -19,7 +19,8 @@ export const createProduct = async (req, res, next) => {
         price: parseFloat(price),
         taxPercentage: parseFloat(taxPercentage || 5.0),
         uom: uom || 'Unit',
-        description
+        description,
+        image
       }
     });
     res.status(201).json(product);
@@ -31,7 +32,7 @@ export const createProduct = async (req, res, next) => {
 export const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, categoryId, price, taxPercentage, uom, description, active } = req.body;
+    const { name, categoryId, price, taxPercentage, uom, description, active, image } = req.body;
     const product = await prisma.product.update({
       where: { id: parseInt(id) },
       data: {
@@ -41,7 +42,8 @@ export const updateProduct = async (req, res, next) => {
         taxPercentage: taxPercentage ? parseFloat(taxPercentage) : undefined,
         uom,
         description,
-        active
+        active,
+        image
       }
     });
     res.status(200).json(product);

@@ -10,6 +10,9 @@ export const getAllFloors = async (req, res, next) => {
               where: {
                 status: {
                   in: ['DRAFT', 'KITCHEN', 'PREPARING', 'COMPLETED']
+                },
+                session: {
+                  status: 'OPEN'
                 }
               },
               include: {
