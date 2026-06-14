@@ -13,6 +13,11 @@ export const getOrders = async () => {
   return response.data;
 };
 
+export const getOrderById = async (id) => {
+  const response = await axios.get(`${API_URL}/${id}`, getHeaders());
+  return response.data;
+};
+
 export const createOrder = async (orderData) => {
   const response = await axios.post(API_URL, orderData, getHeaders());
   return response.data;

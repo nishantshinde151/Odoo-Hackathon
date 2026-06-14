@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { Search, Loader2, Clock, CheckCircle2, Play, ChefHat, Filter } from 'lucide-react';
 import { getOrders, updateOrderStatus } from '../../services/orderService';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Kitchen() {
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [socketStatus, setSocketStatus] = useState('Connecting...');
@@ -240,7 +242,17 @@ export default function Kitchen() {
 
                   {/* Actions Footer */}
                   <div className="p-4 bg-[#FAF8F6] border-t border-slate-100 flex gap-3">
-                    {isPreparing ? (
+                    {user?.role === 'EMPLOYEE' ? (
+                      isPreparing ? (
+                        <span className="flex-1 py-3 bg-amber-50 text-amber-700 border border-amber-200 font-extrabold rounded-2xl text-sm flex items-center justify-center gap-2 animate-pulse">
+                          <Clock className="w-4 h-4" /> Preparing...
+                        </span>
+                      ) : (
+                        <span className="flex-1 py-3 bg-rose-50 text-rose-700 border border-rose-250 font-extrabold rounded-2xl text-sm flex items-center justify-center gap-2">
+                          <Clock className="w-4 h-4" /> Waiting to Cook
+                        </span>
+                      )
+                    ) : isPreparing ? (
                       <button 
                         onClick={() => handleUpdateStatus(ord.id, ord.status)}
                         className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-2xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"

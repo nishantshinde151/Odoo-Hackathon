@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { 
   Layers, LayoutGrid, Users, Plus, Check, X, Search, Loader2, 
@@ -17,6 +17,7 @@ import { getActivePromotions } from '../../services/promotionService';
 
 export default function POS() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   // Session management states
   const [activeSession, setActiveSession] = useState(null);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -618,7 +619,7 @@ export default function POS() {
             unitPrice: c.price,
             total: c.price * c.qty
           }));
-          const sub = product.price;
+          const sub = parseFloat(product.price);
           const tx = sub * 0.05;
           const gt = sub + tx;
           const updated = await updateOrder(newOrd.id, {
@@ -854,28 +855,7 @@ export default function POS() {
   // Process checkout/payment
   const handlePayOrder = async () => {
     if (!activeOrder) return;
-    try {
-      // Mark as paid
-      await updateOrderStatus(activeOrder.id, 'PAID');
-      
-      const otherUnpaid = getTableOrders(selectedTable.id).filter(o => o.id !== activeOrder.id && o.status !== 'PAID' && o.status !== 'CANCELLED');
-      if (otherUnpaid.length > 0) {
-        alert(`Order ${activeOrder.orderNumber} checkout successful. Other active orders still remain for Table ${selectedTable.tableNumber}.`);
-      } else {
-        alert(`Order ${activeOrder.orderNumber} checkout successful. Table ${selectedTable.tableNumber} is now free.`);
-      }
-      
-      // Return to floor plan
-      setSelectedTable(null);
-      setActiveOrder(null);
-      setCart([]);
-      setAppliedCoupon(null);
-      fetchPOSData();
-    } catch (err) {
-      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to checkout order.';
-      console.error('Failed to checkout order:', err);
-      alert(errorMsg);
-    }
+    navigate(`/payments?orderId=${activeOrder.id}`);
   };
 
   // Release table completely without order/cancel order

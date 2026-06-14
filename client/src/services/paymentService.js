@@ -17,3 +17,8 @@ export const getPaymentMethods = async () => {
   const response = await axios.get(`${API_URL}/methods`, getHeaders());
   return response.data;
 };
+
+export const sendEmailReceipt = async (orderId, email) => {
+  const response = await axios.post(`${API_URL}/${orderId}/email`, { email }, getHeaders());
+  return response.data;
+};

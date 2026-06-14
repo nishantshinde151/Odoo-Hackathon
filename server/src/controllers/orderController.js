@@ -97,6 +97,11 @@ export const updateOrder = async (req, res, next) => {
     const { id } = req.params;
     const { customerId, subtotal, tax, discount, grandTotal, items, status, couponId } = req.body;
 
+    // Restrict cooking status modifications to ADMIN or KITCHEN roles
+    if (status && ['PREPARING', 'COMPLETED'].includes(status) && req.user?.role !== 'ADMIN' && req.user?.role !== 'KITCHEN') {
+      return res.status(403).json({ error: 'Access denied: staff cannot modify cooking status.' });
+    }
+
     // Delete existing line items first
     await prisma.orderItem.deleteMany({
       where: { orderId: parseInt(id) }
@@ -158,6 +163,11 @@ export const updateOrderStatus = async (req, res, next) => {
     const { id } = req.params;
     const { status } = req.body; // "KITCHEN" | "PREPARING" | "COMPLETED" | "PAID" | "CANCELLED"
     
+    // Restrict cooking status modifications to ADMIN or KITCHEN roles
+    if (status && ['PREPARING', 'COMPLETED'].includes(status) && req.user?.role !== 'ADMIN' && req.user?.role !== 'KITCHEN') {
+      return res.status(403).json({ error: 'Access denied: staff cannot modify cooking status.' });
+    }
+
     const order = await prisma.order.update({
       where: { id: parseInt(id) },
       data: { status },
@@ -224,6 +234,29 @@ export const deleteOrder = async (req, res, next) => {
     }
 
     res.status(200).json({ message: 'Order deleted successfully.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getOrderById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const order = await prisma.order.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        orderItems: { include: { product: true } },
+        table: { include: { floor: true } },
+        customer: true,
+        orderCoupons: { include: { coupon: true } }
+      }
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found.' });
+    }
+
+    res.status(200).json(order);
   } catch (error) {
     next(error);
   }
