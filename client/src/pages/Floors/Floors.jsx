@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Plus, Search, Edit2, Trash2, Loader2, Layers, 
-  Check, X, AlertCircle, RefreshCw, Eye, EyeOff, LayoutGrid
+  Check, X, AlertCircle, Eye, EyeOff, LayoutGrid
 } from 'lucide-react';
 import { 
   getFloors, 
@@ -156,13 +156,6 @@ export default function Floors() {
         </div>
         <div className="flex gap-2.5 shrink-0">
           <button 
-            onClick={fetchFloorsList}
-            className="p-3 text-slate-500 hover:text-[#8A583C] bg-[#FAF8F6] hover:bg-[#FAF6F0] rounded-xl border border-slate-100/50 transition duration-300"
-            title="Refresh List"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-          <button 
             onClick={handleOpenCreate}
             className="px-5 py-3 bg-[#8A583C] hover:bg-[#73442A] text-white rounded-xl shadow-lg shadow-amber-900/10 transition duration-300 flex items-center gap-2 text-sm font-semibold"
           >
@@ -180,7 +173,7 @@ export default function Floors() {
             placeholder="Search floors by name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-8 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:border-[#8A583C] transition duration-300"
+            className="w-full pl-12 pr-8 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:border-[#8A583C] transition duration-300"
           />
           {search && (
             <button 

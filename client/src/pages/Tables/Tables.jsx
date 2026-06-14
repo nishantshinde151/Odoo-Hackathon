@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Plus, Search, Edit2, Trash2, Loader2, Check, X, 
-  AlertCircle, RefreshCw, Layers, ToggleLeft, ToggleRight
+  AlertCircle, Layers, ToggleLeft, ToggleRight, ChevronDown
 } from 'lucide-react';
 import { 
   getTables, 
@@ -160,13 +160,6 @@ export default function Tables() {
         </div>
         <div className="flex gap-2.5 shrink-0">
           <button 
-            onClick={fetchData}
-            className="p-3 text-slate-500 hover:text-[#8A583C] bg-[#FAF8F6] hover:bg-[#FAF6F0] rounded-xl border border-slate-100/50 transition duration-300"
-            title="Refresh List"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-          <button 
             onClick={handleOpenCreate}
             disabled={floors.length === 0}
             className="px-5 py-3 bg-[#8A583C] hover:bg-[#73442A] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl shadow-lg shadow-amber-900/10 transition duration-300 flex items-center gap-2 text-sm font-semibold"
@@ -193,7 +186,7 @@ export default function Tables() {
             placeholder="Search tables by table number or floor location..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-8 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:border-[#8A583C] transition duration-300"
+            className="w-full pl-12 pr-8 py-2.5 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:border-[#8A583C] transition duration-300"
           />
           {search && (
             <button 
@@ -378,19 +371,22 @@ export default function Tables() {
               {/* Floor Selection */}
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Floor Location</label>
-                <select 
-                  required
-                  value={formData.floorId}
-                  onChange={(e) => setFormData(prev => ({ ...prev, floorId: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#8A583C] bg-white transition"
-                >
-                  <option value="" disabled>Select Floor Zone</option>
-                  {floors.map(floor => (
-                    <option key={floor.id} value={floor.id}>
-                      {floor.name} {!floor.active ? '(Inactive)' : ''}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select 
+                    required
+                    value={formData.floorId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, floorId: e.target.value }))}
+                    className="w-full appearance-none pl-3.5 pr-10 py-2.5 bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#8A583C]/20 focus:border-[#8A583C] cursor-pointer transition-all duration-200"
+                  >
+                    <option value="" disabled>Select Floor Zone</option>
+                    {floors.map(floor => (
+                      <option key={floor.id} value={floor.id}>
+                        {floor.name} {!floor.active ? '(Inactive)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                </div>
               </div>
 
               {/* Seats Count */}

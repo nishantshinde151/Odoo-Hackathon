@@ -91,6 +91,29 @@ function AdminRoute({ children }) {
   return children;
 }
 
+// Kitchen/KDS Only Route Guard (Allows KITCHEN and ADMIN)
+function KitchenRoute({ children }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <span className="text-white text-sm">Loading session...</span>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (user.role !== 'KITCHEN' && user.role !== 'ADMIN') {
+    return <Navigate to="/pos" replace />;
+  }
+  
+  return children;
+}
+
 // Main Layout with Role-based Sidebar
 function MainLayout({ children }) {
   const { user, logout } = useAuth();
@@ -125,8 +148,7 @@ function MainLayout({ children }) {
 
   const employeeTabs = [
     { name: 'POS Terminal', to: '/pos' },
-    { name: 'Orders', to: '/orders' },
-    { name: 'Kitchen', to: '/kitchen' }
+    { name: 'Orders', to: '/orders' }
   ];
 
   const kitchenTabs = [
@@ -152,7 +174,6 @@ function MainLayout({ children }) {
 
   const employeeLinks = [
     { name: 'POS Terminal', to: '/pos', icon: LayoutDashboard },
-    { name: 'Kitchen (KDS)', to: '/kitchen', icon: Layers },
     { name: 'Orders', to: '/orders', icon: BarChart3 },
     { name: 'Payments', to: '/payments', icon: Coffee },
     { name: 'Customers', to: '/customers', icon: Users },
@@ -250,19 +271,8 @@ function MainLayout({ children }) {
           </div>
 
           <div className="flex items-center space-x-5">
-            {/* Notification Bell */}
-            <button className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full ring-2 ring-white"></span>
-            </button>
-
-            {/* Settings Gear */}
-            <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition">
-              <Settings className="w-5 h-5" />
-            </button>
-
             {/* Avatar & User Name */}
-            <div className="flex items-center gap-3 pl-2 border-l border-gray-250">
+            <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-gray-800">
                   {user?.name && user.name !== 'Staff Member' 
@@ -313,7 +323,7 @@ export default function App() {
             <Route path="/customers" element={<EmployeeRoute><MainLayout><Customers /></MainLayout></EmployeeRoute>} />
             <Route path="/orders" element={<EmployeeRoute><MainLayout><Orders /></MainLayout></EmployeeRoute>} />
             <Route path="/pos" element={<EmployeeRoute><MainLayout><POS /></MainLayout></EmployeeRoute>} />
-            <Route path="/kitchen" element={<ProtectedRoute><MainLayout><Kitchen /></MainLayout></ProtectedRoute>} />
+            <Route path="/kitchen" element={<KitchenRoute><MainLayout><Kitchen /></MainLayout></KitchenRoute>} />
             <Route path="/payments" element={<EmployeeRoute><MainLayout><Payments /></MainLayout></EmployeeRoute>} />
             <Route path="/sessions" element={<ProtectedRoute><MainLayout><Sessions /></MainLayout></ProtectedRoute>} />
           </Routes>

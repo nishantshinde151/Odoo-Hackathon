@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   User, Mail, Shield, Key, Trash2, Edit, Plus, Search, 
-  Lock, UserPlus, X, RefreshCw, AlertTriangle, Check, ShieldAlert
+  Lock, UserPlus, X, Loader2, AlertTriangle, Check, ShieldAlert, ChevronDown
 } from 'lucide-react';
 import * as userService from '../../services/userService';
 
@@ -171,15 +171,9 @@ export default function Employees() {
               placeholder="Search by name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition"
+              className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition"
             />
           </div>
-          <button 
-            onClick={fetchEmployees}
-            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-amber-600 border border-gray-200 px-3 py-2 rounded-xl hover:border-amber-500 transition"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Reload Staff List
-          </button>
         </div>
 
         {error && (
@@ -191,7 +185,7 @@ export default function Employees() {
         {/* Table View */}
         {loading && employees.length === 0 ? (
           <div className="py-20 text-center text-gray-400 font-medium flex flex-col items-center justify-center gap-2">
-            <RefreshCw className="w-8 h-8 animate-spin text-amber-500" />
+            <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
             <span>Loading employees list...</span>
           </div>
         ) : filteredEmployees.length === 0 ? (
@@ -326,29 +320,35 @@ export default function Employees() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Access Role</label>
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="EMPLOYEE">Employee (POS)</option>
-                    <option value="KITCHEN">Kitchen (KDS)</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="w-full appearance-none pl-3.5 pr-10 py-2.5 bg-white border border-gray-200 hover:border-[#8A583C]/40 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8A583C]/20 focus:border-[#8A583C] cursor-pointer transition-all duration-200 text-gray-700"
+                    >
+                      <option value="EMPLOYEE">Employee (POS)</option>
+                      <option value="KITCHEN">Kitchen (KDS)</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Initial Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="ARCHIVED">ARCHIVED</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      className="w-full appearance-none pl-3.5 pr-10 py-2.5 bg-white border border-gray-200 hover:border-[#8A583C]/40 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8A583C]/20 focus:border-[#8A583C] cursor-pointer transition-all duration-200 text-gray-700"
+                    >
+                      <option value="ACTIVE">ACTIVE</option>
+                      <option value="ARCHIVED">ARCHIVED</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+                  </div>
                 </div>
               </div>
 
@@ -415,29 +415,35 @@ export default function Employees() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Access Role</label>
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="EMPLOYEE">Employee (POS)</option>
-                    <option value="KITCHEN">Kitchen (KDS)</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                      className="w-full appearance-none pl-3.5 pr-10 py-2.5 bg-white border border-gray-200 hover:border-[#8A583C]/40 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8A583C]/20 focus:border-[#8A583C] cursor-pointer transition-all duration-200 text-gray-700"
+                    >
+                      <option value="EMPLOYEE">Employee (POS)</option>
+                      <option value="KITCHEN">Kitchen (KDS)</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="ARCHIVED">ARCHIVED</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      className="w-full appearance-none pl-3.5 pr-10 py-2.5 bg-white border border-gray-200 hover:border-[#8A583C]/40 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8A583C]/20 focus:border-[#8A583C] cursor-pointer transition-all duration-200 text-gray-700"
+                    >
+                      <option value="ACTIVE">ACTIVE</option>
+                      <option value="ARCHIVED">ARCHIVED</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+                  </div>
                 </div>
               </div>
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Search, Calendar, Eye, Trash2, Edit2, X, Printer, Mail, 
-  ShoppingBag, Clock, User, CreditCard, ChevronRight, DollarSign, Filter, RefreshCw
+  Search, Calendar, Eye, Trash2, Edit2, X, Mail, 
+  ShoppingBag, Clock, User, CreditCard, ChevronRight, DollarSign, Filter, ChevronDown
 } from 'lucide-react';
 import { getOrders, deleteOrder } from '../../services/orderService';
 
@@ -131,13 +131,6 @@ export default function Orders() {
           </h2>
           <p className="text-slate-500 text-sm mt-1">Audit transactions, manage table bookings, view receipts, and update active orders.</p>
         </div>
-        <button 
-          onClick={() => fetchOrders()}
-          className="p-3 text-slate-500 hover:text-[#8A583C] bg-[#FAF8F6] hover:bg-[#FAF6F0] rounded-xl border border-slate-100/50 transition duration-300 self-stretch md:self-auto flex items-center justify-center gap-2 font-bold text-xs"
-          title="Refresh log"
-        >
-          <RefreshCw className="w-4 h-4" /> Refresh Ledger
-        </button>
       </div>
 
       {/* STATS OVERVIEW CARDS */}
@@ -190,23 +183,26 @@ export default function Orders() {
               placeholder="Search by order number, customer name, table..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10.5 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#8A583C] transition"
+              className="w-full pl-12 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#8A583C] transition"
             />
           </div>
 
           {/* Date Selector */}
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4.5 h-4.5 text-slate-400" />
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none bg-white text-slate-600"
-            >
-              <option value="ALL">All Dates</option>
-              <option value="TODAY">Today</option>
-              <option value="YESTERDAY">Yesterday</option>
-              <option value="WEEK">Last 7 Days</option>
-            </select>
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <Calendar className="w-4.5 h-4.5 text-slate-400 shrink-0" />
+            <div className="relative flex-1 md:flex-initial">
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="w-full appearance-none pr-9 pl-3.5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#8A583C]/20 focus:border-[#8A583C] cursor-pointer transition-all duration-200"
+              >
+                <option value="ALL">All Dates</option>
+                <option value="TODAY">Today</option>
+                <option value="YESTERDAY">Yesterday</option>
+                <option value="WEEK">Last 7 Days</option>
+              </select>
+              <ChevronDown className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+            </div>
           </div>
         </div>
 
@@ -387,7 +383,14 @@ export default function Orders() {
                       <div key={item.id} className="flex justify-between items-start text-xs font-bold text-slate-700">
                         <div className="flex-1 pr-4">
                           <p className="text-slate-800 font-extrabold">{item.product?.name}</p>
-                          <p className="text-[10px] text-slate-400 font-bold mt-0.5">₹{parseFloat(item.unitPrice).toFixed(2)} x {item.quantity}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] text-slate-400 font-bold">₹{parseFloat(item.unitPrice).toFixed(2)} x {item.quantity}</span>
+                            {item.spicePreference && (
+                              <span className="px-1.5 py-0.5 bg-rose-50 text-rose-600 rounded-md text-[8px] font-black uppercase border border-rose-100">
+                                {item.spicePreference}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <span className="text-slate-900 font-black">₹{parseFloat(item.total).toFixed(2)}</span>
                       </div>
@@ -443,14 +446,7 @@ export default function Orders() {
                   <Edit2 className="w-3.5 h-3.5" /> Resume Ticket
                 </button>
               )}
-              {selectedOrder.status !== 'DRAFT' && (
-                <button
-                  onClick={() => alert('Simulating Print: Receipt sent to local printer.')}
-                  className="flex-1 py-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
-                >
-                  <Printer className="w-3.5 h-3.5" /> Print Receipt
-                </button>
-              )}
+
               <button
                 onClick={() => setSelectedOrder(null)}
                 className="py-3 px-5 border border-slate-200 bg-white text-slate-505 hover:bg-slate-50 rounded-xl text-xs font-bold transition"

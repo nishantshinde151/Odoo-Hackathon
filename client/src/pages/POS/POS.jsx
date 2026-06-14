@@ -4,7 +4,7 @@ import { io } from 'socket.io-client';
 import { 
   Layers, LayoutGrid, Users, Plus, Check, X, Search, Loader2, 
   ArrowLeft, Trash2, ShoppingCart, UserPlus, CreditCard, Send, Coffee,
-  RefreshCw, AlertCircle
+  AlertCircle, ChevronDown
 } from 'lucide-react';
 import { getFloors } from '../../services/floorService';
 import { getProducts } from '../../services/productService';
@@ -205,7 +205,9 @@ export default function POS() {
               productId: item.productId,
               name: item.product?.name || 'Unknown Item',
               price: parseFloat(item.unitPrice),
-              qty: item.quantity
+              qty: item.quantity,
+              categoryId: item.product?.categoryId || null,
+              spicePreference: item.spicePreference || null
             }));
             setCart(mappedCart);
             
@@ -283,7 +285,8 @@ export default function POS() {
         productId: c.productId,
         quantity: c.qty,
         unitPrice: c.price,
-        total: c.price * c.qty
+        total: c.price * c.qty,
+        spicePreference: c.spicePreference || null
       }));
 
       // Calculate figures locally based on newCart
@@ -348,7 +351,8 @@ export default function POS() {
         productId: c.productId,
         quantity: c.qty,
         unitPrice: c.price,
-        total: c.price * c.qty
+        total: c.price * c.qty,
+        spicePreference: c.spicePreference || null
       }));
 
       // Calculate discount
@@ -461,7 +465,8 @@ export default function POS() {
             productId: c.productId,
             quantity: c.qty,
             unitPrice: c.price,
-            total: c.price * c.qty
+            total: c.price * c.qty,
+            spicePreference: c.spicePreference || null
           }));
 
           const updated = await updateOrder(activeOrder.id, {
@@ -510,7 +515,8 @@ export default function POS() {
         productId: c.productId,
         quantity: c.qty,
         unitPrice: c.price,
-        total: c.price * c.qty
+        total: c.price * c.qty,
+        spicePreference: c.spicePreference || null
       }));
 
       const updated = await updateOrder(activeOrder.id, {
@@ -543,7 +549,9 @@ export default function POS() {
           productId: item.productId,
           name: item.product?.name || 'Unknown Item',
           price: parseFloat(item.unitPrice),
-          qty: item.quantity
+          qty: item.quantity,
+          categoryId: item.product?.categoryId || null,
+          spicePreference: item.spicePreference || null
         }));
         
         const newCart = [...mappedCart];
@@ -555,7 +563,9 @@ export default function POS() {
             productId: product.id,
             name: product.name,
             price: parseFloat(product.price),
-            qty: 1
+            qty: 1,
+            categoryId: product.categoryId,
+            spicePreference: null
           });
         }
         setCart(newCart);
@@ -609,7 +619,9 @@ export default function POS() {
             productId: product.id,
             name: product.name,
             price: parseFloat(product.price),
-            qty: 1
+            qty: 1,
+            categoryId: product.categoryId,
+            spicePreference: null
           }];
           setCart(newCart);
           
@@ -654,7 +666,9 @@ export default function POS() {
         productId: product.id,
         name: product.name,
         price: parseFloat(product.price),
-        qty: 1
+        qty: 1,
+        categoryId: product.categoryId,
+        spicePreference: null
       });
     }
     
@@ -691,6 +705,21 @@ export default function POS() {
     syncCartToBackend(newCart);
   };
 
+  const handleUpdateSpice = (productId, spice) => {
+    if (!activeOrder || activeOrder.status !== 'DRAFT') {
+      alert('This order has already been sent to the kitchen and cannot be modified.');
+      return;
+    }
+    const newCart = cart.map(item => {
+      if (item.productId === productId) {
+        return { ...item, spicePreference: spice || null };
+      }
+      return item;
+    });
+    setCart(newCart);
+    syncCartToBackend(newCart);
+  };
+
   const getTableOrders = (tableId) => {
     if (!tableId) return [];
     for (const floor of floors) {
@@ -698,6 +727,21 @@ export default function POS() {
       if (table) return table.orders || [];
     }
     return [];
+  };
+
+  const canItemBeSpicy = (item) => {
+    const name = (item.name || '').toLowerCase();
+    const category = categories.find(c => c.id === item.categoryId);
+    const catName = category ? category.name.toLowerCase() : '';
+    
+    const nonSpicyWords = [
+      'coffee', 'tea', 'drink', 'beverage', 'dessert', 'sweet', 'pastry', 
+      'pie', 'cake', 'cookie', 'shake', 'smoothie', 'juice', 'lemonade', 
+      'water', 'soda', 'bakery', 'shake', 'frappuccino', 'espresso', 'cappuccino', 'latte'
+    ];
+    
+    const hasNonSpicyWord = nonSpicyWords.some(word => catName.includes(word) || name.includes(word));
+    return !hasNonSpicyWord;
   };
 
   const handleStartNewOrder = async () => {
@@ -759,7 +803,9 @@ export default function POS() {
         productId: item.productId,
         name: item.product?.name || 'Unknown Item',
         price: parseFloat(item.unitPrice),
-        qty: item.quantity
+        qty: item.quantity,
+        categoryId: item.product?.categoryId || null,
+        spicePreference: item.spicePreference || null
       }));
       setCart(mappedCart);
     } else {
@@ -1042,13 +1088,6 @@ export default function POS() {
             >
               Close Session
             </button>
-            <button 
-              onClick={fetchPOSData}
-              className="p-3 text-slate-500 hover:text-[#8A583C] bg-[#FAF8F6] hover:bg-[#FAF6F0] rounded-xl border border-slate-100/50 transition duration-300"
-              title="Refresh Seating"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
           </div>
         </div>
 
@@ -1190,7 +1229,7 @@ export default function POS() {
                         placeholder="Search by customer name or phone..."
                         value={searchCustQuery}
                         onChange={(e) => setSearchCustQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#8A583C] transition"
+                        className="w-full pl-11 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#8A583C] transition"
                       />
                     </div>
 
@@ -1365,9 +1404,9 @@ export default function POS() {
   const customerName = activeOrder?.customer?.name || 'Walk-in Customer';
 
   return (
-    <div className="flex flex-col lg:flex-row h-full gap-6 animate-fade-in font-sans">
+    <div className="flex flex-col lg:flex-row h-full lg:h-[calc(100vh-80px)] lg:-m-8 gap-6 lg:gap-0 animate-fade-in font-sans">
       {/* 1. PRODUCT CATALOG AND GRID PANEL */}
-      <div className="flex-1 flex flex-col space-y-4">
+      <div className="flex-1 flex flex-col space-y-4 p-6 lg:pl-8 lg:pt-8 lg:pb-8 lg:pr-6">
         {/* Header toolbar */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4.5 rounded-3xl border border-slate-100 shadow-sm shrink-0">
           <button
@@ -1417,13 +1456,13 @@ export default function POS() {
               placeholder="Search catalog..."
               value={productSearch}
               onChange={(e) => setProductSearch(e.target.value)}
-              className="w-full pl-8 pr-4 py-1.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#8A583C] transition"
+              className="w-full pl-10 pr-4 py-1.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#8A583C] transition"
             />
           </div>
         </div>
 
         {/* Product items Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 flex-1 overflow-y-auto pr-2 pb-6 min-h-[300px]">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 auto-rows-max flex-1 overflow-y-auto pr-2 pb-6 min-h-[300px]">
           {filteredProducts.length === 0 ? (
             <div className="col-span-full bg-white rounded-3xl p-16 text-center text-slate-400">
               <Coffee className="w-10 h-10 text-slate-300 mx-auto mb-2" />
@@ -1434,13 +1473,29 @@ export default function POS() {
               <div
                 key={prod.id}
                 onClick={() => handleAddToCart(prod)}
-                className="bg-white p-4.5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-[#8A583C] cursor-pointer transition group"
+                className="bg-white p-3.5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-[#8A583C] cursor-pointer transition duration-300 group hover:shadow-md hover:-translate-y-0.5"
               >
                 <div>
+                  <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-3 bg-slate-55/40 relative border border-slate-100/50 flex items-center justify-center">
+                    {prod.image ? (
+                      <img 
+                        src={prod.image} 
+                        alt={prod.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-[#FAF6F0] text-[#8A583C]/40">
+                        <Coffee className="w-8 h-8" />
+                      </div>
+                    )}
+                  </div>
                   <span className="text-[9px] uppercase font-extrabold text-[#8A583C] bg-[#FAF6F0] px-2 py-0.5 rounded-full border border-[#FAF6F0]">
                     {prod.category?.name || 'Item'}
                   </span>
-                  <h4 className="font-extrabold text-sm text-slate-800 mt-2.5 truncate group-hover:text-[#8A583C] transition">
+                  <h4 className="font-extrabold text-sm text-slate-800 mt-2.5 truncate group-hover:text-[#8A583C] transition duration-200">
                     {prod.name}
                   </h4>
                   <p className="text-[10px] text-slate-400 line-clamp-2 mt-1 leading-normal">
@@ -1460,11 +1515,9 @@ export default function POS() {
         </div>
       </div>
 
-      {/* 2. ORDER CART SIDEBAR PANEL */}
-      <div className="w-full lg:w-96 bg-white border border-slate-100 rounded-3xl shadow-lg flex flex-col justify-between overflow-hidden shrink-0 h-[600px] lg:h-auto">
-        <div className="flex flex-col flex-1 min-h-0">
+      <div className="w-full lg:w-96 bg-white border-l border-slate-150 shadow-lg flex flex-col overflow-hidden shrink-0 h-[600px] lg:h-full">
           {/* Cart Header */}
-          <div className="p-5 border-b border-slate-100 flex justify-between items-center shrink-0">
+          <div className="py-3 px-5 border-b border-slate-100 flex justify-between items-center shrink-0">
             <div>
               <div className="flex items-center gap-1.5">
                 <ShoppingCart className="w-4 h-4 text-[#8A583C]" />
@@ -1496,7 +1549,7 @@ export default function POS() {
             const tableOrders = getTableOrders(selectedTable.id);
             if (tableOrders.length > 0) {
               return (
-                <div className="px-5 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between overflow-x-auto gap-2 shrink-0 select-none">
+                <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between overflow-x-auto gap-2 shrink-0 select-none">
                   <div className="flex gap-2">
                     {tableOrders.map((ord, idx) => {
                       const isActive = activeOrder && activeOrder.id === ord.id;
@@ -1509,7 +1562,9 @@ export default function POS() {
                               productId: item.productId,
                               name: item.product?.name || 'Unknown Item',
                               price: parseFloat(item.unitPrice),
-                              qty: item.quantity
+                              qty: item.quantity,
+                              categoryId: item.product?.categoryId || null,
+                              spicePreference: item.spicePreference || null
                             }));
                             setCart(mappedCart);
                           }}
@@ -1539,7 +1594,7 @@ export default function POS() {
           })()}
 
           {/* Cart Line Items */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="flex-1 overflow-y-auto py-3 px-5 space-y-3.5">
             {cart.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-2.5">
                 <ShoppingCart className="w-10 h-10 text-slate-200" />
@@ -1550,7 +1605,31 @@ export default function POS() {
                 <div key={item.productId} className="flex justify-between items-center text-xs border-b border-slate-50 pb-3">
                   <div className="flex-1 min-w-0 pr-2">
                     <p className="font-extrabold text-slate-800 truncate">{item.name}</p>
-                    <p className="text-slate-400 font-semibold mt-0.5">₹{item.price.toFixed(2)}</p>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                      <span className="text-slate-400 font-semibold">₹{item.price.toFixed(2)}</span>
+                      {canItemBeSpicy(item) && (
+                        <>
+                          <span className="text-slate-300 select-none">•</span>
+                          <div className="relative flex items-center bg-[#FAF6F0] hover:bg-[#8A583C]/10 rounded-full border border-[#8A583C]/20 px-2 py-0.5 transition-all">
+                            <select
+                              disabled={activeOrder?.status !== 'DRAFT'}
+                              value={item.spicePreference || ''}
+                              onChange={(e) => handleUpdateSpice(item.productId, e.target.value)}
+                              className="appearance-none bg-transparent pr-4 text-[9px] font-black uppercase text-[#8A583C] focus:outline-none cursor-pointer disabled:cursor-not-allowed disabled:pr-0"
+                            >
+                              <option value="">No Spice</option>
+                              <option value="Mild">Mild</option>
+                              <option value="Medium">Medium</option>
+                              <option value="Spicy">Spicy</option>
+                              <option value="Extra Spicy">Extra Spicy</option>
+                            </select>
+                            {activeOrder?.status === 'DRAFT' && (
+                              <ChevronDown className="w-2.5 h-2.5 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#8A583C]" />
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center space-x-2.5 shrink-0">
                     <button
@@ -1578,15 +1657,14 @@ export default function POS() {
               ))
             )}
           </div>
-        </div>
 
         {/* Coupon and Promotion panel */}
-        <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 space-y-2 shrink-0">
+        <div className="px-5 py-2 border-t border-slate-100 bg-slate-50/50 space-y-1.5 shrink-0">
           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Discount Coupon / Promo</label>
           
           {/* Coupon Display or Input */}
           {appliedCoupon ? (
-            <div className="p-2.5 bg-emerald-50 border border-emerald-100 rounded-2xl flex justify-between items-center text-[11px] font-bold text-emerald-700 animate-fade-in">
+            <div className="p-2 bg-emerald-50 border border-emerald-100 rounded-2xl flex justify-between items-center text-[11px] font-bold text-emerald-700 animate-fade-in">
               <div className="flex items-center gap-1.5 truncate">
                 <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                 <span className="truncate">Applied: {appliedCoupon.code} (-{appliedCoupon.discountType === 'PERCENTAGE' ? `${appliedCoupon.discountValue}%` : `₹${appliedCoupon.discountValue}`})</span>
@@ -1608,12 +1686,12 @@ export default function POS() {
                 value={couponCodeInput}
                 onChange={(e) => setCouponCodeInput(e.target.value)}
                 disabled={activeOrder?.status !== 'DRAFT' || cart.length === 0}
-                className="flex-1 px-3 py-1.5 border border-slate-200 rounded-xl text-xs uppercase placeholder:normal-case font-bold text-slate-700 focus:outline-none focus:border-[#8A583C] transition bg-white disabled:bg-slate-100 disabled:opacity-60"
+                className="flex-1 px-3 py-1 border border-slate-200 rounded-xl text-xs uppercase placeholder:normal-case font-bold text-slate-700 focus:outline-none focus:border-[#8A583C] transition bg-white disabled:bg-slate-100 disabled:opacity-60"
               />
               <button
                 type="submit"
                 disabled={!couponCodeInput.trim() || activeOrder?.status !== 'DRAFT' || cart.length === 0}
-                className="px-3.5 py-1.5 bg-[#8A583C] hover:bg-[#73442A] text-white font-bold rounded-xl text-xs disabled:opacity-50 transition shrink-0"
+                className="px-3.5 py-1 bg-[#8A583C] hover:bg-[#73442A] text-white font-bold rounded-xl text-xs disabled:opacity-50 transition shrink-0"
               >
                 Apply
               </button>
@@ -1622,7 +1700,7 @@ export default function POS() {
 
           {/* Active Auto Promo Notification */}
           {activePromo && (
-            <div className="p-2.5 bg-amber-50 border border-amber-100 rounded-2xl text-[11px] font-bold text-amber-800 flex items-center gap-1.5 animate-fade-in">
+            <div className="p-2 bg-amber-50 border border-amber-100 rounded-2xl text-[11px] font-bold text-amber-800 flex items-center gap-1.5 animate-fade-in">
               <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 animate-pulse" />
               <span>Promo: {activePromo.name} applied</span>
             </div>
@@ -1630,8 +1708,8 @@ export default function POS() {
         </div>
 
         {/* Pricing Subtotals & Actions */}
-        <div className="p-5 border-t border-slate-100 bg-[#FAF8F6] space-y-4 shrink-0">
-          <div className="space-y-1.5 text-xs text-slate-500 font-semibold">
+        <div className="py-3 px-5 border-t border-slate-100 bg-[#FAF8F6] space-y-2.5 shrink-0">
+          <div className="space-y-1 text-xs text-slate-500 font-semibold">
             <div className="flex justify-between">
               <span>Subtotal</span>
               <span className="text-slate-800">₹{subtotal.toFixed(2)}</span>
@@ -1671,18 +1749,18 @@ export default function POS() {
           )}
 
           {/* POS cart actions */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
+          <div className="grid grid-cols-2 gap-3 pt-0">
             <button
               onClick={handleSendToKitchen}
               disabled={cart.length === 0 || updatingCart || activeOrder?.status !== 'DRAFT'}
-              className="py-3 bg-white hover:bg-slate-50 border border-slate-200 disabled:opacity-55 disabled:cursor-not-allowed text-slate-700 rounded-2xl font-bold transition text-xs flex items-center justify-center gap-1.5 shadow-sm"
+              className="py-2 bg-white hover:bg-slate-50 border border-slate-200 disabled:opacity-55 disabled:cursor-not-allowed text-slate-700 rounded-2xl font-bold transition text-xs flex items-center justify-center gap-1.5 shadow-sm"
             >
               <Send className="w-3.5 h-3.5 text-slate-500" /> Send Kitchen
             </button>
             <button
               onClick={handlePayOrder}
               disabled={cart.length === 0 || updatingCart}
-              className="py-3 bg-[#8A583C] hover:bg-[#73442A] disabled:opacity-55 disabled:cursor-not-allowed text-white rounded-2xl font-bold transition text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-amber-900/10"
+              className="py-2 bg-[#8A583C] hover:bg-[#73442A] disabled:opacity-55 disabled:cursor-not-allowed text-white rounded-2xl font-bold transition text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-amber-900/10"
             >
               <CreditCard className="w-3.5 h-3.5" /> Check Out
             </button>

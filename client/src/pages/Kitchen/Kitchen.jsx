@@ -13,7 +13,7 @@ export default function Kitchen() {
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('ALL'); // 'ALL', 'KITCHEN', 'PREPARING'
+  const [activeTab, setActiveTab] = useState('ALL'); // 'ALL', 'KITCHEN', 'PREPARING', 'COMPLETED'
 
   useEffect(() => {
     fetchOrders();
@@ -36,7 +36,7 @@ export default function Kitchen() {
 
     // Listen for new orders sent to kitchen
     socket.on('kds:new_order', (order) => {
-      if (['KITCHEN', 'PREPARING'].includes(order.status)) {
+      if (['KITCHEN', 'PREPARING', 'COMPLETED'].includes(order.status)) {
         setOrders((prev) => {
           const exists = prev.find(o => o.id === order.id);
           if (exists) return prev.map(o => o.id === order.id ? order : o);
@@ -48,8 +48,8 @@ export default function Kitchen() {
     // Listen for order status updates
     socket.on('pos:order_status_update', (order) => {
       setOrders((prev) => {
-        // If it's completed or cancelled, remove it from the active KDS view
-        if (!['KITCHEN', 'PREPARING'].includes(order.status)) {
+        // If it's paid or cancelled, remove it from the active KDS view
+        if (!['KITCHEN', 'PREPARING', 'COMPLETED'].includes(order.status)) {
           return prev.filter(o => o.id !== order.id);
         }
         
@@ -70,7 +70,7 @@ export default function Kitchen() {
     try {
       const data = await getOrders();
       // Only keep orders meant for kitchen
-      const activeKitchenOrders = data.filter(o => ['KITCHEN', 'PREPARING'].includes(o.status));
+      const activeKitchenOrders = data.filter(o => ['KITCHEN', 'PREPARING', 'COMPLETED'].includes(o.status));
       setOrders(activeKitchenOrders);
     } catch (error) {
       console.error('Failed to load kitchen orders:', error);
@@ -84,9 +84,6 @@ export default function Kitchen() {
     try {
       // Optimistic UI update
       setOrders(prev => {
-        if (nextStatus === 'COMPLETED') {
-          return prev.filter(o => o.id !== orderId);
-        }
         return prev.map(o => o.id === orderId ? { ...o, status: nextStatus } : o);
       });
       
@@ -153,7 +150,7 @@ export default function Kitchen() {
               placeholder="Search Order or Table..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-amber-600 transition"
+              className="w-full pl-11 pr-4 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-amber-600 transition"
             />
           </div>
 
@@ -177,6 +174,12 @@ export default function Kitchen() {
             >
               Preparing
             </button>
+            <button
+              onClick={() => setActiveTab('COMPLETED')}
+              className={`px-4 py-1.5 text-xs font-bold rounded-lg transition ${activeTab === 'COMPLETED' ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-500/20' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Completed
+            </button>
           </div>
         </div>
       </div>
@@ -195,15 +198,23 @@ export default function Kitchen() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedOrders.map((ord) => {
               const isPreparing = ord.status === 'PREPARING';
+              const isCompleted = ord.status === 'COMPLETED';
+              
+              let borderClass = 'border-rose-200 shadow-rose-900/5';
+              let headerBgClass = 'bg-rose-500 text-white';
+              
+              if (isPreparing) {
+                borderClass = 'border-amber-300 shadow-amber-900/5';
+                headerBgClass = 'bg-amber-500 text-white';
+              } else if (isCompleted) {
+                borderClass = 'border-emerald-300 shadow-emerald-900/5';
+                headerBgClass = 'bg-emerald-600 text-white';
+              }
               
               return (
-                <div key={ord.id} className={`bg-white rounded-3xl shadow-sm border flex flex-col overflow-hidden transition-all duration-300 ${
-                  isPreparing ? 'border-amber-300 shadow-amber-900/5' : 'border-rose-200 shadow-rose-900/5'
-                }`}>
+                <div key={ord.id} className={`bg-white rounded-3xl shadow-sm border flex flex-col overflow-hidden transition-all duration-300 ${borderClass}`}>
                   {/* Ticket Header */}
-                  <div className={`p-4 flex justify-between items-center ${
-                    isPreparing ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white'
-                  }`}>
+                  <div className={`p-4 flex justify-between items-center ${headerBgClass}`}>
                     <div>
                       <h4 className="font-black text-lg tracking-wider">{ord.orderNumber}</h4>
                       <p className="text-xs font-semibold opacity-90 mt-0.5">
@@ -228,21 +239,30 @@ export default function Kitchen() {
                             <span className="font-black text-lg text-slate-800 w-6">{item.quantity}x</span>
                             <div>
                               <span className="font-bold text-slate-700 text-sm block leading-tight">{item.product?.name || 'Unknown Item'}</span>
-                              {item.product?.category?.name && (
-                                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                  {item.product.category.name}
-                                </span>
-                              )}
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                {item.product?.category?.name && (
+                                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                    {item.product.category.name}
+                                  </span>
+                                )}
+                                {item.spicePreference && (
+                                  <span className="px-1.5 py-0.5 bg-rose-50 text-rose-605 border border-rose-100 rounded-md text-[8px] font-black uppercase">
+                                    {item.spicePreference}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </li>
                       ))}
                     </ul>
-                  </div>
-
-                  {/* Actions Footer */}
+                  </div>                  {/* Actions Footer */}
                   <div className="p-4 bg-[#FAF8F6] border-t border-slate-100 flex gap-3">
-                    {user?.role === 'EMPLOYEE' ? (
+                    {isCompleted ? (
+                      <span className="flex-1 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 font-extrabold rounded-2xl text-sm flex items-center justify-center gap-2">
+                        <CheckCircle2 className="w-4 h-4" /> Completed & Ready
+                      </span>
+                    ) : user?.role === 'EMPLOYEE' ? (
                       isPreparing ? (
                         <span className="flex-1 py-3 bg-amber-50 text-amber-700 border border-amber-200 font-extrabold rounded-2xl text-sm flex items-center justify-center gap-2 animate-pulse">
                           <Clock className="w-4 h-4" /> Preparing...

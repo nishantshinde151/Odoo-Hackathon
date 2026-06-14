@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Plus, Search, Edit2, Trash2, Loader2, Tag, 
-  Info, Check, X, AlertCircle, RefreshCw, Layers 
+  Info, Check, X, AlertCircle, Layers, ChevronDown 
 } from 'lucide-react';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../../services/productService';
 import { getCategories } from '../../services/categoryService';
@@ -190,13 +190,6 @@ export default function Products() {
         </div>
         <div className="flex gap-2.5">
           <button 
-            onClick={fetchData}
-            className="p-2.5 text-slate-500 hover:text-amber-600 bg-slate-50 hover:bg-amber-50 rounded-xl border border-slate-100 transition"
-            title="Refresh List"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-          <button 
             onClick={handleOpenCreate}
             className="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl shadow-lg shadow-amber-600/20 hover:shadow-amber-500/30 transition flex items-center gap-2 text-sm font-semibold"
           >
@@ -215,7 +208,7 @@ export default function Products() {
             placeholder="Search products by name or description..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-8 py-2 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:border-amber-500 transition"
+            className="w-full pl-11 pr-8 py-2 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:border-amber-500 transition"
           />
           {search && (
             <button 
@@ -228,31 +221,33 @@ export default function Products() {
         </div>
 
         {/* Category Filter */}
-        <div className="flex gap-3">
-          <div className="w-48">
+        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+          <div className="flex-1 min-w-[140px] sm:w-48 relative">
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-700 bg-white focus:outline-none focus:border-amber-500 transition"
+              className="w-full appearance-none pl-3.5 pr-10 py-2 border border-slate-200 hover:border-[#8A583C]/40 rounded-xl text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#8A583C]/20 focus:border-[#8A583C] cursor-pointer transition-all duration-200"
             >
               <option value="ALL">All Categories</option>
               {categories.map(cat => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
+            <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
           </div>
 
           {/* Status Filter */}
-          <div className="w-36">
+          <div className="flex-1 min-w-[120px] sm:w-36 relative">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-700 bg-white focus:outline-none focus:border-amber-500 transition"
+              className="w-full appearance-none pl-3.5 pr-10 py-2 border border-slate-200 hover:border-[#8A583C]/40 rounded-xl text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#8A583C]/20 focus:border-[#8A583C] cursor-pointer transition-all duration-200"
             >
               <option value="ALL">All Statuses</option>
               <option value="ACTIVE">Active</option>
               <option value="ARCHIVED">Archived</option>
             </select>
+            <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
           </div>
         </div>
       </div>
@@ -412,39 +407,45 @@ export default function Products() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Category</label>
-                  <select
-                    name="categoryId"
-                    required
-                    value={formData.categoryId}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:border-amber-500 transition"
-                  >
-                    <option value="" disabled>Select category</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="categoryId"
+                      required
+                      value={formData.categoryId}
+                      onChange={handleInputChange}
+                      className="w-full appearance-none pl-3.5 pr-10 py-2.5 border border-slate-200 hover:border-[#8A583C]/40 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#8A583C]/20 focus:border-[#8A583C] cursor-pointer transition-all duration-200 text-slate-700"
+                    >
+                      <option value="" disabled>Select category</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Unit of Measure (UOM)</label>
-                  <select
-                    name="uom"
-                    value={formData.uom}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:border-amber-500 transition"
-                  >
-                    <option value="Unit">Unit</option>
-                    <option value="Cup">Cup</option>
-                    <option value="Plate">Plate</option>
-                    <option value="Slice">Slice</option>
-                    <option value="Glass">Glass</option>
-                    <option value="Bottle">Bottle</option>
-                    <option value="Gram">Gram</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="uom"
+                      value={formData.uom}
+                      onChange={handleInputChange}
+                      className="w-full appearance-none pl-3.5 pr-10 py-2.5 border border-slate-200 hover:border-[#8A583C]/40 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#8A583C]/20 focus:border-[#8A583C] cursor-pointer transition-all duration-200 text-slate-700"
+                    >
+                      <option value="Unit">Unit</option>
+                      <option value="Cup">Cup</option>
+                      <option value="Plate">Plate</option>
+                      <option value="Slice">Slice</option>
+                      <option value="Glass">Glass</option>
+                      <option value="Bottle">Bottle</option>
+                      <option value="Gram">Gram</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                  </div>
                 </div>
               </div>
 

@@ -137,7 +137,16 @@ export default function Login() {
                   <input type="checkbox" className="mr-2 w-3.5 h-3.5 accent-[#e87c0a] bg-[#1a110d] border-[#2a1a12] rounded" />
                   Remember me
               </label>
-              <a href="#" className="text-[#e87c0a] text-xs hover:underline">Forgot password?</a>
+              <a 
+                href="#" 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  alert("Please contact the store administrator or your manager to reset your employee shift password."); 
+                }} 
+                className="text-[#e87c0a] text-xs hover:underline"
+              >
+                Forgot password?
+              </a>
           </div>
 
           <button

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Loader2, Calendar, User, Info, X, ClipboardList, CheckCircle2 } from 'lucide-react';
+import { Loader2, Calendar, User, Info, X, ClipboardList, CheckCircle2 } from 'lucide-react';
 import { getSessions, getSessionSummary } from '../../services/sessionService';
 
 export default function Sessions() {
@@ -55,13 +55,6 @@ export default function Sessions() {
           </h2>
           <p className="text-slate-500 text-sm mt-1">Audit previous work shift sessions, opening controls, and actual drawer counts.</p>
         </div>
-        <button 
-          onClick={fetchSessions}
-          className="p-3 text-slate-500 hover:text-[#8A583C] bg-[#FAF8F6] hover:bg-[#FAF6F0] rounded-xl border border-slate-100/50 transition"
-          title="Refresh History"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
       </div>
 
       {/* Main Table */}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   ShoppingBag, 
@@ -12,14 +13,16 @@ import {
 } from 'lucide-react';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [liveData, setLiveData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeframe, setTimeframe] = useState('7days');
 
   useEffect(() => {
     const fetchReport = async () => {
       try {
         const token = localStorage.getItem('jwtToken');
-        const response = await axios.get('/api/reports/sales', {
+        const response = await axios.get(`/api/reports/sales?range=${timeframe}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setLiveData(response.data);
@@ -30,7 +33,7 @@ export default function Dashboard() {
       }
     };
     fetchReport();
-  }, []);
+  }, [timeframe]);
 
   // Format currency helpers
   const formatINR = (value) => {
@@ -41,81 +44,47 @@ export default function Dashboard() {
     }).format(value);
   };
 
-  // Mock values 
-  const mockStats = {
-    totalOrders: 1248,
-    todayRevenue: 4250.00,
-    avgOrderValue: 18.50, // value
-    activeTables: "12/24",
-    activeTablesPercent: 50
-  };
+  if (loading) {
+    return (
+      <div className="min-h-[400px] flex flex-col items-center justify-center space-y-4 font-sans">
+        <div className="w-10 h-10 border-4 border-[#8A583C] border-t-transparent rounded-full animate-spin"></div>
+        <span className="text-slate-400 font-semibold text-sm">Loading dashboard reports...</span>
+      </div>
+    );
+  }
 
-  // Merge live database data if it exists, otherwise fall back to  mocks
+  // Live values from report endpoint, fallback to zeroes if database is fresh/empty
   const stats = {
-    totalOrders: liveData?.totalOrders ? liveData.totalOrders + mockStats.totalOrders : mockStats.totalOrders,
-    todayRevenue: liveData?.totalRevenue ? Number(liveData.totalRevenue) + mockStats.todayRevenue : mockStats.todayRevenue,
-    avgOrderValue: liveData?.averageOrderValue ? Number(liveData.averageOrderValue) : mockStats.avgOrderValue,
-    activeTables: mockStats.activeTables,
-    activeTablesPercent: mockStats.activeTablesPercent
+    totalOrders: liveData?.totalOrders || 0,
+    todayRevenue: Number(liveData?.totalRevenue || 0),
+    avgOrderValue: Number(liveData?.averageOrderValue || 0),
+    activeTables: liveData?.activeTables || "0/0",
+    activeTablesPercent: liveData?.activeTablesPercent || 0
   };
 
-  // Sales trend data (Mon - Sun)
-  const salesTrends = [
-    { day: 'Mon', height: '40%', value: '₹2,100' },
-    { day: 'Tue', height: '65%', value: '₹3,412' },
-    { day: 'Wed', height: '50%', value: '₹2,630' },
-    { day: 'Thu', height: '80%', value: '₹4,250' },
-    { day: 'Fri', height: '60%', value: '₹3,180' },
-    { day: 'Sat', height: '85%', value: '₹4,510' },
-    { day: 'Sun', height: '70%', value: '₹3,720' }
+  const salesTrends = liveData?.salesTrends || [
+    { day: 'Mon', height: '5%', value: '₹0.00' },
+    { day: 'Tue', height: '5%', value: '₹0.00' },
+    { day: 'Wed', height: '5%', value: '₹0.00' },
+    { day: 'Thu', height: '5%', value: '₹0.00' },
+    { day: 'Fri', height: '5%', value: '₹0.00' },
+    { day: 'Sat', height: '5%', value: '₹0.00' },
+    { day: 'Sun', height: '5%', value: '₹0.00' }
   ];
 
-  // Top Selling Products
-  const topProducts = [
-    { name: 'Espresso', count: 342, percent: '90%' },
-    { name: 'Croissant', count: 289, percent: '75%' },
-    { name: 'Latte', count: 215, percent: '55%' },
-    { name: 'Cappuccino', count: 188, percent: '45%' }
-  ];
-
-  // Recent Orders
-  const recentOrders = [
-    { id: '#9842', table: 'T-04', items: '3 Items', amount: 24.50, status: 'Completed' },
-    { id: '#9841', table: 'T-12', items: '1 Item', amount: 12.00, status: 'Preparing' },
-    { id: '#9840', table: 'T-08', items: '5 Items', amount: 45.20, status: 'Completed' }
-  ];
-
-  // Employee Performance
-  const employees = [
-    { 
-      name: 'Sarah Jenkins', 
-      orders: 42, 
-      sales: 842.00, 
-      rank: 1, 
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&fit=crop&q=80' 
-    },
-    { 
-      name: 'Marcus Vole', 
-      orders: 38, 
-      sales: 720.50, 
-      rank: 2, 
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&fit=crop&q=80' 
-    },
-    { 
-      name: 'Elena Rodriguez', 
-      orders: 31, 
-      sales: 612.00, 
-      rank: 3, 
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&fit=crop&q=80' 
-    }
-  ];
+  const topProducts = liveData?.topProducts || [];
+  const recentOrders = liveData?.recentOrders || [];
+  const employees = liveData?.employees || [];
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12 font-sans animate-fade-in">
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Orders */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100/50 flex flex-col justify-between hover:shadow-md transition duration-300">
+        <div 
+          onClick={() => navigate('/orders')}
+          className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100/50 flex flex-col justify-between hover:shadow-md transition duration-300 cursor-pointer"
+        >
           <div className="flex justify-between items-start">
             <span className="text-sm font-semibold text-gray-400">Total Orders</span>
             <div className="w-10 h-10 rounded-2xl bg-[#FAF6F0] flex items-center justify-center text-[#8A583C]">
@@ -134,7 +103,10 @@ export default function Dashboard() {
         </div>
 
         {/* Today's Revenue */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100/50 flex flex-col justify-between hover:shadow-md transition duration-300">
+        <div 
+          onClick={() => navigate('/reports')}
+          className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100/50 flex flex-col justify-between hover:shadow-md transition duration-300 cursor-pointer"
+        >
           <div className="flex justify-between items-start">
             <span className="text-sm font-semibold text-gray-400">Today's Revenue</span>
             <div className="w-10 h-10 rounded-2xl bg-[#FAF6F0] flex items-center justify-center text-[#8A583C]">
@@ -153,7 +125,10 @@ export default function Dashboard() {
         </div>
 
         {/* Average Order Value */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100/50 flex flex-col justify-between hover:shadow-md transition duration-300">
+        <div 
+          onClick={() => navigate('/reports')}
+          className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100/50 flex flex-col justify-between hover:shadow-md transition duration-300 cursor-pointer"
+        >
           <div className="flex justify-between items-start">
             <span className="text-sm font-semibold text-gray-400">Avg. Order Value</span>
             <div className="w-10 h-10 rounded-2xl bg-[#FAF6F0] flex items-center justify-center text-[#8A583C]">
@@ -172,7 +147,10 @@ export default function Dashboard() {
         </div>
 
         {/* Active Tables */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100/50 flex flex-col justify-between hover:shadow-md transition duration-300">
+        <div 
+          onClick={() => navigate('/pos')}
+          className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100/50 flex flex-col justify-between hover:shadow-md transition duration-300 cursor-pointer"
+        >
           <div className="flex justify-between items-start">
             <span className="text-sm font-semibold text-gray-400">Active Tables</span>
             <div className="w-10 h-10 rounded-2xl bg-[#FAF6F0] flex items-center justify-center text-[#8A583C]">
@@ -202,10 +180,18 @@ export default function Dashboard() {
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100/50 lg:col-span-2 flex flex-col justify-between">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-gray-850">Sales Trends</h3>
-            <button className="flex items-center gap-1.5 px-4 py-2 bg-[#FAF8F6] border border-gray-100 hover:bg-gray-100/50 rounded-2xl text-xs font-bold text-gray-600 transition">
-              <span>Last 7 Days</span>
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
+            <div className="relative">
+              <select 
+                value={timeframe}
+                onChange={(e) => setTimeframe(e.target.value)}
+                className="appearance-none pr-9 pl-4 py-2 bg-[#FAF6F0]/60 hover:bg-[#8A583C]/10 border border-[#8A583C]/20 hover:border-[#8A583C]/35 rounded-xl text-xs font-bold text-[#8A583C] transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#8A583C]/25 focus:border-[#8A583C]"
+              >
+                <option value="today">Today</option>
+                <option value="7days">Last 7 Days</option>
+                <option value="month">This Month</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#8A583C]" />
+            </div>
           </div>
 
           {/* Bar Chart Graphics */}
@@ -252,7 +238,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <button className="w-full py-3.5 border border-[#8A583C]/35 text-[#8A583C] hover:bg-[#8A583C]/5 font-bold text-sm rounded-2xl transition duration-300 mt-6">
+          <button 
+            onClick={() => navigate('/reports')}
+            className="w-full py-3.5 border border-[#8A583C]/35 text-[#8A583C] hover:bg-[#8A583C]/5 font-bold text-sm rounded-2xl transition duration-300 mt-6"
+          >
             View Detailed Report
           </button>
         </div>
@@ -264,7 +253,12 @@ export default function Dashboard() {
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100/50 lg:col-span-3">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-gray-850">Recent Orders</h3>
-            <button className="text-xs font-bold text-[#8A583C] hover:underline">View All</button>
+            <button 
+              onClick={() => navigate('/orders')}
+              className="text-xs font-bold text-[#8A583C] hover:underline"
+            >
+              View All
+            </button>
           </div>
 
           {/* Table */}
